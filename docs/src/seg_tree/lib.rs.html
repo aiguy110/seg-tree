@@ -257,13 +257,15 @@
 <span id="257">257</span>
 <span id="258">258</span>
 <span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
 </pre><pre class="rust"><code><span class="doccomment">//! A generic implimentation of a segment tree (or [range query tree](https://en.wikipedia.org/wiki/Range_query_tree)),</span>
 <span class="doccomment">//! relying on a simple [`Merge`] trait to define the operation used during range queries. The zero-recursion approach is</span>
 <span class="doccomment">//! taken from [this](https://www.geeksforgeeks.org/segment-tree-efficient-implementation/) excellent GeeksForGeeks article. </span>
 <span class="doccomment">//! </span>
-<span class="doccomment">//! While powerful, the trait-based appoach does have one major disadvantage int that, if you want to use this datastructure with</span>
-<span class="doccomment">//! a type (e.g. `i32`) defined outside the crate in which you are working, you will have to wrap it in a dummy type, as Rust</span>
-<span class="doccomment">//! [does not allow you to impliment an external trait on an external type](https://stackoverflow.com/questions/71000682/is-possible-to-implement-traits-on-foreign-types/71001425#71001425).</span>
+<span class="doccomment">//! While powerful, the trait-based appoach does have one major disadvantage: If are using this crate as an external dependency, and you want to impliment </span>
+<span class="doccomment">//! [`Merge`] on a type defined outside the crate in which you are working (e.g. `i32`), you will have to wrap it in a &quot;dummy&quot; type defined inside your crate.</span>
+<span class="doccomment">//! This is because [Rust will not allow you to impliment an external trait on an external type](https://stackoverflow.com/questions/71000682/is-possible-to-implement-traits-on-foreign-types/71001425#71001425).</span>
 <span class="doccomment">//! There is no runtime overhead for this wrapping, but it can make your code a little verbose.</span>
 <span class="doccomment">//! </span>
 <span class="doccomment">//! Example of wrapping an `i32` to impliment [`Merge`] on it:</span>
@@ -286,7 +288,9 @@
 <span class="doccomment">//!     assert_eq!(tree.query(1, 3), MyInt(5));</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
-
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Alternatively, you could simply copy-paste the [source](https://github.com/aiguy110/seg-tree/blob/master/src/lib.rs)</span>
+<span class="doccomment">//! into your own crate and impliment [`Merge`] on whatever type you like!</span>
 <span class="kw">use</span> <span class="ident">std::iter::FromIterator</span>;
 
 <span class="doccomment">/// A data structure for allowing both range queries and point updates on a sequence in `O(log(n))` time.</span>
