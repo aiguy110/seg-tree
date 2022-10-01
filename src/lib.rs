@@ -2,9 +2,9 @@
 //! relying on a simple [`Merge`] trait to define the operation used during range queries. The zero-recursion approach is
 //! taken from [this](https://www.geeksforgeeks.org/segment-tree-efficient-implementation/) excellent GeeksForGeeks article. 
 //! 
-//! While powerful, the trait-based appoach does have one major disadvantage int that, if you want to use this datastructure with
-//! a type (e.g. `i32`) defined outside the crate in which you are working, you will have to wrap it in a dummy type, as Rust
-//! [does not allow you to impliment an external trait on an external type](https://stackoverflow.com/questions/71000682/is-possible-to-implement-traits-on-foreign-types/71001425#71001425).
+//! While powerful, the trait-based appoach does have one major disadvantage: If are using this crate as an external dependency, and you want to impliment 
+//! [`Merge`] on a type defined outside the crate in which you are working (e.g. `i32`), you will have to wrap it in a "dummy" type defined inside your crate.
+//! This is because [Rust will not allow you to impliment an external trait on an external type](https://stackoverflow.com/questions/71000682/is-possible-to-implement-traits-on-foreign-types/71001425#71001425).
 //! There is no runtime overhead for this wrapping, but it can make your code a little verbose.
 //! 
 //! Example of wrapping an `i32` to impliment [`Merge`] on it:
@@ -27,7 +27,9 @@
 //!     assert_eq!(tree.query(1, 3), MyInt(5));
 //! }
 //! ```
-
+//!
+//! Alternatively, you could simply copy-paste the [source](https://github.com/aiguy110/seg-tree/blob/master/src/lib.rs)
+//! into your own crate and impliment [`Merge`] on whatever type you like!
 use std::iter::FromIterator;
 
 /// A data structure for allowing both range queries and point updates on a sequence in `O(log(n))` time.
