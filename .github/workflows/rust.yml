@@ -21,7 +21,7 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: Generate docs
-      run: cargo docs --no-deps
+      run: cargo doc --no-deps
     - name: Move docs
       run: mv target/docs .
     - uses: EndBug/add-and-commit@v9
