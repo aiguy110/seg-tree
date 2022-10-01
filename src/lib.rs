@@ -2,23 +2,33 @@
 //! relying on a simple [`Merge`] trait to define the operation used during range queries. The zero-recursion approach is
 //! taken from [this](https://www.geeksforgeeks.org/segment-tree-efficient-implementation/) excellent GeeksForGeeks article. 
 //! 
-// //! Example: (This example doesn't actually work because Rust won't let you impliment an external trait on an external type)
-// //! ```
-// //! use seg_tree::{SegTree, Merge};
-// //! 
-// //! impl Merge for i32 {
-// //!    fn merge(l: &i32, r: &i32) -> i32 { *l + *r }
-// //! }
-// //! 
-// //! fn main() {
-// //!     let mut tree: SegTree = vec![1,2,-1,4].into();
-// //!     assert_eq!(tree.query(0, 4), 6);
-// //!     assert_eq!(tree.query(1, 3), 1);
-// //!     tree.update(2, 3);
-// //!     assert_eq!(tree.query(0, 4), 10);
-// //!     assert_eq!(tree.query(1, 3), 5);
-// //! }
-// //! ```
+//! While powerful, the trait-based appoach does have one major disadvantage int that, if you want to use this datastructure with
+//! a type (e.g. `i32`) defined outside the crate in which you are working, you will have to wrap it in a dummy type, as Rust
+//! [does not allow you to impliment an external trait on an external type](https://stackoverflow.com/questions/71000682/is-possible-to-implement-traits-on-foreign-types/71001425#71001425).
+//! There is no runtime overhead for this wrapping, but it can make your code a little verbose.
+//! 
+//! Example of wrapping an `i32` to impliment [`Merge`] on it:
+//! ```
+//! use seg_tree::{SegTree, Merge};
+//! 
+//! #[derive(Default, Clone, Debug, PartialEq)]
+//! struct MyInt(i32);
+//! 
+//! impl Merge for MyInt {
+//!    fn merge(l: &Self, r: &Self) -> Self { MyInt(l.0 + r.0) }
+//! }
+//! 
+//! fn main() {
+//!     let mut tree: SegTree<_> = vec![1,2,-1,4].into_iter().map(|n| MyInt(n)).collect();
+//!     assert_eq!(tree.query(0, 4), MyInt(6));
+//!     assert_eq!(tree.query(1, 3), MyInt(1));
+//!     tree.update(2, MyInt(3));
+//!     assert_eq!(tree.query(0, 4), MyInt(10));
+//!     assert_eq!(tree.query(1, 3), MyInt(5));
+//! }
+//! ```
+
+use std::iter::FromIterator;
 
 /// A data structure for allowing both range queries and point updates on a sequence in `O(log(n))` time.
 /// 
@@ -74,6 +84,18 @@ where T: Merge + Default + Clone // Default and Clone aren't strictly needed her
         }
 
         tree
+    }
+}
+
+impl<T> FromIterator<T> for SegTree<T> 
+where 
+    T: Merge + Default + Clone,
+{
+    fn from_iter<I>(iter: I) -> Self 
+    where I: IntoIterator<Item = T> 
+    {
+        let items: Vec<_> = iter.into_iter().collect();
+        items.into()
     }
 }
 
