@@ -235,27 +235,59 @@
 <span id="235">235</span>
 <span id="236">236</span>
 <span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
 </pre><pre class="rust"><code><span class="doccomment">//! A generic implimentation of a segment tree (or [range query tree](https://en.wikipedia.org/wiki/Range_query_tree)),</span>
 <span class="doccomment">//! relying on a simple [`Merge`] trait to define the operation used during range queries. The zero-recursion approach is</span>
 <span class="doccomment">//! taken from [this](https://www.geeksforgeeks.org/segment-tree-efficient-implementation/) excellent GeeksForGeeks article. </span>
 <span class="doccomment">//! </span>
-<span class="comment">// //! Example: (This example doesn&#39;t actually work because Rust won&#39;t let you impliment an external trait on an external type)</span>
-<span class="comment">// //! ```</span>
-<span class="comment">// //! use seg_tree::{SegTree, Merge};</span>
-<span class="comment">// //! </span>
-<span class="comment">// //! impl Merge for i32 {</span>
-<span class="comment">// //!    fn merge(l: &amp;i32, r: &amp;i32) -&gt; i32 { *l + *r }</span>
-<span class="comment">// //! }</span>
-<span class="comment">// //! </span>
-<span class="comment">// //! fn main() {</span>
-<span class="comment">// //!     let mut tree: SegTree = vec![1,2,-1,4].into();</span>
-<span class="comment">// //!     assert_eq!(tree.query(0, 4), 6);</span>
-<span class="comment">// //!     assert_eq!(tree.query(1, 3), 1);</span>
-<span class="comment">// //!     tree.update(2, 3);</span>
-<span class="comment">// //!     assert_eq!(tree.query(0, 4), 10);</span>
-<span class="comment">// //!     assert_eq!(tree.query(1, 3), 5);</span>
-<span class="comment">// //! }</span>
-<span class="comment">// //! ```</span>
+<span class="doccomment">//! While powerful, the trait-based appoach does have one major disadvantage int that, if you want to use this datastructure with</span>
+<span class="doccomment">//! a type (e.g. `i32`) defined outside the crate in which you are working, you will have to wrap it in a dummy type, as Rust</span>
+<span class="doccomment">//! [does not allow you to impliment an external trait on an external type](https://stackoverflow.com/questions/71000682/is-possible-to-implement-traits-on-foreign-types/71001425#71001425).</span>
+<span class="doccomment">//! There is no runtime overhead for this wrapping, but it can make your code a little verbose.</span>
+<span class="doccomment">//! </span>
+<span class="doccomment">//! Example of wrapping an `i32` to impliment [`Merge`] on it:</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//! use seg_tree::{SegTree, Merge};</span>
+<span class="doccomment">//! </span>
+<span class="doccomment">//! #[derive(Default, Clone, Debug, PartialEq)]</span>
+<span class="doccomment">//! struct MyInt(i32);</span>
+<span class="doccomment">//! </span>
+<span class="doccomment">//! impl Merge for MyInt {</span>
+<span class="doccomment">//!    fn merge(l: &amp;Self, r: &amp;Self) -&gt; Self { MyInt(l.0 + r.0) }</span>
+<span class="doccomment">//! }</span>
+<span class="doccomment">//! </span>
+<span class="doccomment">//! fn main() {</span>
+<span class="doccomment">//!     let mut tree: SegTree&lt;_&gt; = vec![1,2,-1,4].into_iter().map(|n| MyInt(n)).collect();</span>
+<span class="doccomment">//!     assert_eq!(tree.query(0, 4), MyInt(6));</span>
+<span class="doccomment">//!     assert_eq!(tree.query(1, 3), MyInt(1));</span>
+<span class="doccomment">//!     tree.update(2, MyInt(3));</span>
+<span class="doccomment">//!     assert_eq!(tree.query(0, 4), MyInt(10));</span>
+<span class="doccomment">//!     assert_eq!(tree.query(1, 3), MyInt(5));</span>
+<span class="doccomment">//! }</span>
+<span class="doccomment">//! ```</span>
+
+<span class="kw">use</span> <span class="ident">std::iter::FromIterator</span>;
 
 <span class="doccomment">/// A data structure for allowing both range queries and point updates on a sequence in `O(log(n))` time.</span>
 <span class="doccomment">/// </span>
@@ -311,6 +343,18 @@
         }
 
         <span class="ident">tree</span>
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">FromIterator</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SegTree</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> 
+<span class="kw">where</span> 
+    <span class="ident">T</span>: <span class="ident">Merge</span> <span class="op">+</span> <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Clone</span>,
+{
+    <span class="kw">fn</span> <span class="ident">from_iter</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="ident">iter</span>: <span class="ident">I</span>) -&gt; <span class="self">Self</span> 
+    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span> 
+    {
+        <span class="kw">let</span> <span class="ident">items</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+        <span class="ident">items</span>.<span class="ident">into</span>()
     }
 }
 
